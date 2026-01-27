@@ -3,27 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>TiggerSmart Controller</title>
     <style>
-        /* ... [KEEP YOUR EXISTING CSS EXACTLY AS IT IS] ... */
-        /* ADD THIS FOR THE MODE SWITCHER */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 50px; /* Space for debug bar */
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .status-card {
+            text-align: center;
+            padding: 25px;
+        }
+        
+        .status-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .status-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .device-name {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .battery-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .battery-box {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .battery-box .icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .battery-box .label {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .battery-box .value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .battery-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .battery-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.5s ease;
+        }
+        
+        .battery-fill.low {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+        
+        .battery-fill.medium {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+        
+        .control-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .preset-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .preset-btn:active {
+            transform: translateY(0);
+        }
+        
+        .custom-input {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .custom-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .log-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .log-item {
+            margin-bottom: 6px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .status-connected { color: #10b981; }
+        .status-disconnected { color: #ef4444; }
+        .status-searching { color: #3b82f6; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .pulse { animation: pulse 1.5s infinite; }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .spin { animation: spin 2s linear infinite; }
+        
+        .alert {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .alert.show { display: block; }
+
+        /* DEBUG BAR STYLES */
         .debug-bar {
             margin-top: 20px;
             padding: 10px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 10px;
-            font-size: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            font-size: 12px;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
         }
         .mode-badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-weight: bold;
-            margin-left: 5px;
+            text-transform: uppercase;
         }
-        .mode-web { background: #3b82f6; }
-        .mode-app { background: #f59e0b; color: black; }
+        .mode-web { background: #3b82f6; color: white; }
+        .mode-app { background: #f59e0b; color: #000; }
+        
+        .debug-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -42,7 +312,7 @@
             <div class="status-text" id="statusText">ยังไม่ได้เชื่อมต่อ</div>
             <div class="device-name" id="deviceName"></div>
         </div>
-
+        
         <div class="card">
             <div class="battery-grid">
                 <div class="battery-box">
@@ -64,30 +334,52 @@
                 </div>
             </div>
         </div>
-
+        
         <div class="card control-card">
             <h3>⚡ โปรแกรมควบคุม</h3>
+            
             <div class="preset-grid">
-                <button class="preset-btn" onclick="sendPreset('off 2 on 3 done 5')">💨 สั้น<br><small>รอ 2s → ควัน 3s</small></button>
-                <button class="preset-btn" onclick="sendPreset('off 5 on 5 done 10')">💨💨 ปกติ<br><small>รอ 5s → ควัน 5s</small></button>
-                <button class="preset-btn" onclick="sendPreset('off 3 on 7 done 10')">💨💨💨 ยาว<br><small>รอ 3s → ควัน 7s</small></button>
-                <button class="preset-btn" onclick="sendPreset('off 2 on 3 off 2 on 3 done 10')">💨💨💨💨 2 ครั้ง<br><small>ควัน 3s × 2</small></button>
+                <button class="preset-btn" onclick="sendPreset('off 2 on 3 done 5')">
+                    💨 สั้น<br><small>รอ 2s → ควัน 3s</small>
+                </button>
+                <button class="preset-btn" onclick="sendPreset('off 5 on 5 done 10')">
+                    💨💨 ปกติ<br><small>รอ 5s → ควัน 5s</small>
+                </button>
+                <button class="preset-btn" onclick="sendPreset('off 3 on 7 done 10')">
+                    💨💨💨 ยาว<br><small>รอ 3s → ควัน 7s</small>
+                </button>
+                <button class="preset-btn" onclick="sendPreset('off 2 on 3 off 2 on 3 done 10')">
+                    💨💨💨💨 2 ครั้ง<br><small>ควัน 3s × 2</small>
+                </button>
             </div>
             
-            <input type="text" class="custom-input" id="customCommand" placeholder="คำสั่งกำหนดเอง" onkeypress="if(event.key==='Enter') sendCustom()">
-            <button class="btn btn-success" onclick="sendCustom()">📤 ส่งคำสั่งกำหนดเอง</button>
+            <input type="text" 
+                   class="custom-input" 
+                   id="customCommand" 
+                   placeholder="คำสั่งกำหนดเอง เช่น off 5 on 10 done 5"
+                   onkeypress="if(event.key==='Enter') sendCustom()">
+            
+            <button class="btn btn-success" onclick="sendCustom()">
+                📤 ส่งคำสั่งกำหนดเอง
+            </button>
         </div>
         
-        <button class="btn btn-primary" id="connectBtn" onclick="connect()">🔍 เชื่อมต่อ TiggerSmart</button>
-        <button class="btn btn-danger" id="disconnectBtn" onclick="disconnect()" style="display:none;">❌ ตัดการเชื่อมต่อ</button>
+        <button class="btn btn-primary" id="connectBtn" onclick="connect()">
+            🔍 เชื่อมต่อ TiggerSmart
+        </button>
+        
+        <button class="btn btn-danger" id="disconnectBtn" onclick="disconnect()" style="display:none;">
+            ❌ ตัดการเชื่อมต่อ
+        </button>
         
         <div class="card">
             <div class="log-container" id="logContainer"></div>
         </div>
 
         <div class="debug-bar">
-            Mode: <span id="modeBadge" class="mode-badge mode-web">WEB</span>
-            <button onclick="toggleMode()" style="margin-left:10px; padding:2px 5px; color:black;">Switch Mode</button>
+            <span>System Mode:</span>
+            <span id="modeBadge" class="mode-badge mode-web">WEB</span>
+            <button class="debug-btn" onclick="toggleMode()">Switch Logic</button>
         </div>
     </div>
 
@@ -105,11 +397,17 @@
 
         // === INITIALIZATION ===
         window.addEventListener('load', () => {
-            // Auto-detect Flutter
+            // Check if Flutter Bridge exists
             if (window.FlutterBridge) {
                 setMode(true);
             } else {
                 setMode(false);
+                // Listen for browser support
+                if (!navigator.bluetooth) {
+                    addLog("⚠️ Browser does not support Web Bluetooth", true);
+                } else {
+                    addLog("🚀 Web Bluetooth Ready");
+                }
             }
         });
 
@@ -119,11 +417,11 @@
             if (isApp) {
                 badge.textContent = "APP (Flutter)";
                 badge.className = "mode-badge mode-app";
-                addLog("📱 App Mode Detected");
+                addLog("📱 Switched to App Mode (Bridge)");
             } else {
                 badge.textContent = "WEB (Chrome)";
                 badge.className = "mode-badge mode-web";
-                addLog("🌐 Web Mode Active");
+                addLog("🌐 Switched to Web Mode (Standard)");
             }
         }
 
@@ -136,8 +434,8 @@
         function connect() {
             if (isAppMode) {
                 // APP MODE: Send message to Flutter
-                addLog("📡 Requesting App to Scan...");
                 updateUI('searching');
+                addLog("📡 Sending CONNECT request to App...");
                 sendToFlutter('CONNECT', {}); 
             } else {
                 // WEB MODE: Use existing logic
@@ -148,7 +446,7 @@
         function disconnect() {
             if (isAppMode) {
                 sendToFlutter('DISCONNECT', {});
-                updateUI('idle'); // Assume success immediately for UI
+                updateUI('disconnected');
             } else {
                 disconnectWebBluetooth();
             }
@@ -160,6 +458,16 @@
                 addLog(`📤 App Sent: ${cmd}`);
             } else {
                 sendWebCommand(cmd);
+            }
+        }
+
+        function sendPreset(cmd) { sendCommand(cmd); }
+        
+        function sendCustom() { 
+            const input = document.getElementById('customCommand');
+            if(input.value.trim()) { 
+                sendCommand(input.value.trim()); 
+                input.value=''; 
             }
         }
 
@@ -181,13 +489,14 @@
         // This function is called BY the Flutter app code
         function receiveDataFromApp(jsonString) {
             try {
-                const data = JSON.parse(jsonString);
+                // Ensure jsonString is actually a string before parsing
+                const data = (typeof jsonString === 'string') ? JSON.parse(jsonString) : jsonString;
                 
                 switch (data.type) {
                     case 'STATUS':
                         if (data.content === 'CONNECTED') {
                             updateUI('connected', 'TiggerSmart (App)');
-                            addLog("✅ App Connected via BLE");
+                            addLog("✅ Connected via App");
                         } else if (data.content === 'DISCONNECTED') {
                             updateUI('disconnected');
                             addLog("❌ App Disconnected");
@@ -195,7 +504,6 @@
                         break;
                         
                     case 'NOTIFICATION':
-                        // data.content should be the string received from ESP32
                         processNotificationData(data.content);
                         break;
 
@@ -205,47 +513,74 @@
                         break;
                 }
             } catch (e) {
-                addLog("❌ Parse Error: " + e, true);
+                addLog("❌ JS Parse Error: " + e.message, true);
+                console.error(e);
             }
         }
 
-        // === SHARED LOGIC ===
-        
+        // === DATA PROCESSING ===
         function processNotificationData(valueStr) {
             addLog(`📥 RX: ${valueStr}`);
             
+            // Expected Format: "Smoke(MASTER): 50% Remote(CHILD): 80%"
             if (valueStr.includes('Smoke(MASTER)')) {
                 const masterMatch = valueStr.match(/Smoke\(MASTER\):\s*(\d+)%/);
                 const childMatch = valueStr.match(/Remote\(CHILD\):\s*(\d+)%/);
                 
-                if (masterMatch) updateBattery('masterBattery', parseInt(masterMatch[1]));
-                if (childMatch) updateBattery('childBattery', parseInt(childMatch[1]));
+                if (masterMatch) {
+                    const val = parseInt(masterMatch[1]);
+                    updateBattery('masterBattery', val);
+                    if(val < 20) showError("⚠️ Master Battery Low!");
+                }
+                if (childMatch) {
+                    const val = parseInt(childMatch[1]);
+                    updateBattery('childBattery', val);
+                    if(val < 20) showError("⚠️ Remote Battery Low!");
+                }
             }
         }
 
-        // === OLD WEB BLUETOOTH LOGIC (Refactored slightly) ===
+        // === WEB BLUETOOTH LOGIC ===
 
         async function connectWebBluetooth() {
-            if (!navigator.bluetooth) return showError('Web Bluetooth not supported');
+            if (!navigator.bluetooth) return showError('Browser does not support Bluetooth');
+            
             try {
                 updateUI('searching');
+                addLog('🔍 Scanning for TiggerSmart...');
+
                 webDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'TiggerSmart' }],
                     optionalServices: [SERVICE_UUID]
                 });
+
                 webDevice.addEventListener('gattserverdisconnected', onWebDisconnected);
+                addLog(`📱 Found: ${webDevice.name}`);
+                
                 webServer = await webDevice.gatt.connect();
+                addLog('⚡ GATT Connected');
+                
                 const service = await webServer.getPrimaryService(SERVICE_UUID);
                 webTxChar = await service.getCharacteristic(TX_CHAR_UUID);
                 const rxChar = await service.getCharacteristic(RX_CHAR_UUID);
+                
                 await rxChar.startNotifications();
                 rxChar.addEventListener('characteristicvaluechanged', (e) => {
                     const val = new TextDecoder().decode(e.target.value);
                     processNotificationData(val);
                 });
+                
                 updateUI('connected', webDevice.name);
+                addLog('✅ Web Bluetooth Ready');
+
             } catch (error) {
-                showError(error.message);
+                console.error(error);
+                if (error.name === 'NotFoundError') {
+                    addLog('❌ User cancelled scan', true);
+                } else {
+                    showError(error.message);
+                    addLog(`❌ Error: ${error.message}`, true);
+                }
                 updateUI('idle');
             }
         }
@@ -256,79 +591,102 @@
                 const encoder = new TextEncoder();
                 await webTxChar.writeValue(encoder.encode(cmd));
                 addLog(`📤 Web Sent: ${cmd}`);
-            } catch (e) { showError(e.message); }
+            } catch (e) { 
+                showError(e.message); 
+                addLog(`❌ Send Error: ${e.message}`, true);
+            }
         }
 
         function disconnectWebBluetooth() {
-            if (webDevice && webDevice.gatt.connected) webDevice.gatt.disconnect();
+            if (webDevice && webDevice.gatt.connected) {
+                webDevice.gatt.disconnect();
+            }
         }
 
         function onWebDisconnected() {
             updateUI('disconnected');
+            addLog('🔌 Disconnected');
             webDevice = null;
         }
 
-        // === HELPER UI FUNCTIONS (Kept from your code) ===
+        // === UI HELPERS ===
+
         function updateBattery(id, percent) {
             const valueEl = document.getElementById(id);
             const fillEl = document.getElementById(id + 'Fill');
+            
             valueEl.textContent = `${percent}%`;
             fillEl.style.width = `${percent}%`;
+            
             fillEl.className = 'battery-fill';
             if (percent <= 20) fillEl.classList.add('low');
             else if (percent <= 50) fillEl.classList.add('medium');
         }
 
-        function sendPreset(cmd) { sendCommand(cmd); }
-        function sendCustom() { 
-            const input = document.getElementById('customCommand');
-            if(input.value.trim()) { sendCommand(input.value.trim()); input.value=''; }
-        }
-
         function updateUI(status, deviceNameText = '') {
-            // ... [Reuse your existing updateUI code here] ...
-            // For brevity, I am not repasting the exact same long function 
-            // but ensure you include the full updateUI logic from your original code here.
-            
             const statusIcon = document.getElementById('statusIcon');
             const statusText = document.getElementById('statusText');
+            const deviceName = document.getElementById('deviceName');
             const connectBtn = document.getElementById('connectBtn');
             const disconnectBtn = document.getElementById('disconnectBtn');
-            const deviceName = document.getElementById('deviceName');
 
+            // Reset classes
+            statusText.className = 'status-text';
             statusIcon.className = 'status-icon';
-            if(status === 'connected') {
-                statusText.innerText = "Connected";
-                statusIcon.innerText = "✅";
+            
+            if (status === 'connected') {
+                statusIcon.textContent = '✅';
+                statusText.textContent = 'เชื่อมต่อสำเร็จ';
+                statusText.classList.add('status-connected');
+                deviceName.textContent = `อุปกรณ์: ${deviceNameText}`;
                 connectBtn.style.display = 'none';
                 disconnectBtn.style.display = 'block';
-                deviceName.innerText = deviceNameText;
-            } else if (status === 'searching') {
-                statusText.innerText = "Searching...";
-                statusIcon.innerText = "🔍";
-                statusIcon.classList.add('pulse');
-            } else {
-                statusText.innerText = "Disconnected";
-                statusIcon.innerText = "📡";
+            
+            } else if (status === 'disconnected') {
+                statusIcon.textContent = '❌';
+                statusText.textContent = 'ตัดการเชื่อมต่อแล้ว';
+                statusText.classList.add('status-disconnected');
                 connectBtn.style.display = 'block';
                 disconnectBtn.style.display = 'none';
+            
+            } else if (status === 'searching') {
+                statusIcon.textContent = '🔍';
+                statusIcon.classList.add('pulse');
+                statusText.textContent = 'กำลังค้นหา...';
+                statusText.classList.add('status-searching');
+                connectBtn.disabled = true;
+            
+            } else {
+                // Idle state
+                statusIcon.textContent = '📡';
+                statusText.textContent = 'ยังไม่ได้เชื่อมต่อ';
+                connectBtn.style.display = 'block';
                 connectBtn.disabled = false;
+                disconnectBtn.style.display = 'none';
             }
         }
 
-        function addLog(msg, isErr=false) {
-            const log = document.getElementById('logContainer');
-            const item = document.createElement('div');
-            item.className = 'log-item';
-            item.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            if(isErr) item.style.borderLeftColor = 'red';
-            log.prepend(item);
+        function addLog(message, isError = false) {
+            const logContainer = document.getElementById('logContainer');
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            if (isError) logItem.style.borderLeftColor = '#ef4444';
+            
+            const time = new Date().toLocaleTimeString('th-TH');
+            logItem.textContent = `[${time}] ${message}`;
+            
+            logContainer.insertBefore(logItem, logContainer.firstChild);
+            if (logContainer.children.length > 30) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
         }
 
-        function showError(msg) {
-            document.getElementById('errorText').innerText = msg;
-            document.getElementById('errorAlert').classList.add('show');
-            setTimeout(() => document.getElementById('errorAlert').classList.remove('show'), 3000);
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            const text = document.getElementById('errorText');
+            text.textContent = message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 5000);
         }
     </script>
 </body>
