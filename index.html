@@ -1,75 +1,334 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bluetooth Bridge Test</title>
+    <title>TiggerSmart Controller</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { margin-top: 0; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; width: 100%; cursor: pointer; }
-        button:active { background-color: #0056b3; }
-        #log { font-family: monospace; font-size: 12px; color: #333; height: 150px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; background: #fff; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
+        /* ... [KEEP YOUR EXISTING CSS EXACTLY AS IT IS] ... */
+        /* ADD THIS FOR THE MODE SWITCHER */
+        .debug-bar {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            font-size: 10px;
+            text-align: center;
+        }
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .mode-web { background: #3b82f6; }
+        .mode-app { background: #f59e0b; color: black; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>💨 TiggerSmart</h1>
+            <div class="subtitle">ระบบควบคุมเครื่องทำควันอัจฉริยะ</div>
+        </div>
+        
+        <div class="alert" id="errorAlert">
+            ⚠️ <span id="errorText"></span>
+        </div>
+        
+        <div class="card status-card">
+            <div class="status-icon" id="statusIcon">📡</div>
+            <div class="status-text" id="statusText">ยังไม่ได้เชื่อมต่อ</div>
+            <div class="device-name" id="deviceName"></div>
+        </div>
 
-    <div class="card">
-        <h2>Simulate Bluetooth Scan</h2>
-        <p>Tap to ask the App to scan for devices.</p>
-        <button onclick="requestScan()">Scan for Devices</button>
-    </div>
+        <div class="card">
+            <div class="battery-grid">
+                <div class="battery-box">
+                    <div class="icon">🔋</div>
+                    <div class="label">เครื่องทำควัน</div>
+                    <div class="value" id="masterBattery">--</div>
+                    <div class="battery-bar">
+                        <div class="battery-fill" id="masterBatteryFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="battery-box">
+                    <div class="icon">🎮</div>
+                    <div class="label">รีโมทคอนโทรล</div>
+                    <div class="value" id="childBattery">--</div>
+                    <div class="battery-bar">
+                        <div class="battery-fill" id="childBatteryFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="card">
-        <h2>Data from App</h2>
-        <div id="log">Waiting for data...</div>
+        <div class="card control-card">
+            <h3>⚡ โปรแกรมควบคุม</h3>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="sendPreset('off 2 on 3 done 5')">💨 สั้น<br><small>รอ 2s → ควัน 3s</small></button>
+                <button class="preset-btn" onclick="sendPreset('off 5 on 5 done 10')">💨💨 ปกติ<br><small>รอ 5s → ควัน 5s</small></button>
+                <button class="preset-btn" onclick="sendPreset('off 3 on 7 done 10')">💨💨💨 ยาว<br><small>รอ 3s → ควัน 7s</small></button>
+                <button class="preset-btn" onclick="sendPreset('off 2 on 3 off 2 on 3 done 10')">💨💨💨💨 2 ครั้ง<br><small>ควัน 3s × 2</small></button>
+            </div>
+            
+            <input type="text" class="custom-input" id="customCommand" placeholder="คำสั่งกำหนดเอง" onkeypress="if(event.key==='Enter') sendCustom()">
+            <button class="btn btn-success" onclick="sendCustom()">📤 ส่งคำสั่งกำหนดเอง</button>
+        </div>
+        
+        <button class="btn btn-primary" id="connectBtn" onclick="connect()">🔍 เชื่อมต่อ TiggerSmart</button>
+        <button class="btn btn-danger" id="disconnectBtn" onclick="disconnect()" style="display:none;">❌ ตัดการเชื่อมต่อ</button>
+        
+        <div class="card">
+            <div class="log-container" id="logContainer"></div>
+        </div>
+
+        <div class="debug-bar">
+            Mode: <span id="modeBadge" class="mode-badge mode-web">WEB</span>
+            <button onclick="toggleMode()" style="margin-left:10px; padding:2px 5px; color:black;">Switch Mode</button>
+        </div>
     </div>
 
     <script>
-        // 1. SEND DATA: Function to send data TO Flutter
-        function sendMessageToApp(action, data) {
-            // We create a JSON object to keep data organized
-            const payload = JSON.stringify({
-                action: action,
-                payload: data
-            });
-            
-            // 'FlutterBridge' is the name we will give our channel in Dart
+        // === CONFIGURATION ===
+        const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+        const TX_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+        const RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+        
+        // === STATE ===
+        let isAppMode = false; // False = Web Bluetooth, True = Flutter Bridge
+        let webDevice = null;
+        let webServer = null;
+        let webTxChar = null;
+
+        // === INITIALIZATION ===
+        window.addEventListener('load', () => {
+            // Auto-detect Flutter
             if (window.FlutterBridge) {
-                window.FlutterBridge.postMessage(payload);
+                setMode(true);
             } else {
-                logMessage("Error: Flutter Bridge not detected.");
+                setMode(false);
+            }
+        });
+
+        function setMode(isApp) {
+            isAppMode = isApp;
+            const badge = document.getElementById('modeBadge');
+            if (isApp) {
+                badge.textContent = "APP (Flutter)";
+                badge.className = "mode-badge mode-app";
+                addLog("📱 App Mode Detected");
+            } else {
+                badge.textContent = "WEB (Chrome)";
+                badge.className = "mode-badge mode-web";
+                addLog("🌐 Web Mode Active");
             }
         }
 
-        // 2. RECEIVE DATA: This function will be called BY Flutter
-        function receiveDataFromApp(jsonData) {
+        function toggleMode() {
+            setMode(!isAppMode);
+        }
+
+        // === CORE FUNCTIONS ===
+
+        function connect() {
+            if (isAppMode) {
+                // APP MODE: Send message to Flutter
+                addLog("📡 Requesting App to Scan...");
+                updateUI('searching');
+                sendToFlutter('CONNECT', {}); 
+            } else {
+                // WEB MODE: Use existing logic
+                connectWebBluetooth();
+            }
+        }
+
+        function disconnect() {
+            if (isAppMode) {
+                sendToFlutter('DISCONNECT', {});
+                updateUI('idle'); // Assume success immediately for UI
+            } else {
+                disconnectWebBluetooth();
+            }
+        }
+
+        function sendCommand(cmd) {
+            if (isAppMode) {
+                sendToFlutter('WRITE', { data: cmd });
+                addLog(`📤 App Sent: ${cmd}`);
+            } else {
+                sendWebCommand(cmd);
+            }
+        }
+
+        // === FLUTTER BRIDGE COMMUNICATION ===
+
+        // 1. OUTBOUND: Send to Flutter
+        function sendToFlutter(action, payload) {
+            if (window.FlutterBridge) {
+                window.FlutterBridge.postMessage(JSON.stringify({
+                    action: action,
+                    payload: payload
+                }));
+            } else {
+                addLog("❌ FlutterBridge not found!", true);
+            }
+        }
+
+        // 2. INBOUND: Received from Flutter
+        // This function is called BY the Flutter app code
+        function receiveDataFromApp(jsonString) {
             try {
-                const data = JSON.parse(jsonData);
-                logMessage("Received [" + data.type + "]: " + JSON.stringify(data.content));
+                const data = JSON.parse(jsonString);
                 
-                // Example: If we receive a list of devices, we could display them
-                if (data.type === 'DEVICE_LIST') {
-                    document.getElementById('log').innerHTML += "<br><b>Found " + data.content.length + " devices!</b>";
+                switch (data.type) {
+                    case 'STATUS':
+                        if (data.content === 'CONNECTED') {
+                            updateUI('connected', 'TiggerSmart (App)');
+                            addLog("✅ App Connected via BLE");
+                        } else if (data.content === 'DISCONNECTED') {
+                            updateUI('disconnected');
+                            addLog("❌ App Disconnected");
+                        }
+                        break;
+                        
+                    case 'NOTIFICATION':
+                        // data.content should be the string received from ESP32
+                        processNotificationData(data.content);
+                        break;
+
+                    case 'ERROR':
+                        showError(data.content);
+                        updateUI('idle');
+                        break;
                 }
             } catch (e) {
-                logMessage("Error parsing data: " + e);
+                addLog("❌ Parse Error: " + e, true);
             }
         }
 
-        // Helper function for the button
-        function requestScan() {
-            logMessage("Sending scan request to App...");
-            sendMessageToApp('START_SCAN', { timeout: 10 });
+        // === SHARED LOGIC ===
+        
+        function processNotificationData(valueStr) {
+            addLog(`📥 RX: ${valueStr}`);
+            
+            if (valueStr.includes('Smoke(MASTER)')) {
+                const masterMatch = valueStr.match(/Smoke\(MASTER\):\s*(\d+)%/);
+                const childMatch = valueStr.match(/Remote\(CHILD\):\s*(\d+)%/);
+                
+                if (masterMatch) updateBattery('masterBattery', parseInt(masterMatch[1]));
+                if (childMatch) updateBattery('childBattery', parseInt(childMatch[1]));
+            }
         }
 
-        // Helper to print text to our on-screen log
-        function logMessage(msg) {
-            const log = document.getElementById('log');
-            log.innerHTML += "<div>> " + msg + "</div>";
-            log.scrollTop = log.scrollHeight; // Auto-scroll to bottom
+        // === OLD WEB BLUETOOTH LOGIC (Refactored slightly) ===
+
+        async function connectWebBluetooth() {
+            if (!navigator.bluetooth) return showError('Web Bluetooth not supported');
+            try {
+                updateUI('searching');
+                webDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'TiggerSmart' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+                webDevice.addEventListener('gattserverdisconnected', onWebDisconnected);
+                webServer = await webDevice.gatt.connect();
+                const service = await webServer.getPrimaryService(SERVICE_UUID);
+                webTxChar = await service.getCharacteristic(TX_CHAR_UUID);
+                const rxChar = await service.getCharacteristic(RX_CHAR_UUID);
+                await rxChar.startNotifications();
+                rxChar.addEventListener('characteristicvaluechanged', (e) => {
+                    const val = new TextDecoder().decode(e.target.value);
+                    processNotificationData(val);
+                });
+                updateUI('connected', webDevice.name);
+            } catch (error) {
+                showError(error.message);
+                updateUI('idle');
+            }
+        }
+
+        async function sendWebCommand(cmd) {
+            if (!webTxChar) return showError('Not connected');
+            try {
+                const encoder = new TextEncoder();
+                await webTxChar.writeValue(encoder.encode(cmd));
+                addLog(`📤 Web Sent: ${cmd}`);
+            } catch (e) { showError(e.message); }
+        }
+
+        function disconnectWebBluetooth() {
+            if (webDevice && webDevice.gatt.connected) webDevice.gatt.disconnect();
+        }
+
+        function onWebDisconnected() {
+            updateUI('disconnected');
+            webDevice = null;
+        }
+
+        // === HELPER UI FUNCTIONS (Kept from your code) ===
+        function updateBattery(id, percent) {
+            const valueEl = document.getElementById(id);
+            const fillEl = document.getElementById(id + 'Fill');
+            valueEl.textContent = `${percent}%`;
+            fillEl.style.width = `${percent}%`;
+            fillEl.className = 'battery-fill';
+            if (percent <= 20) fillEl.classList.add('low');
+            else if (percent <= 50) fillEl.classList.add('medium');
+        }
+
+        function sendPreset(cmd) { sendCommand(cmd); }
+        function sendCustom() { 
+            const input = document.getElementById('customCommand');
+            if(input.value.trim()) { sendCommand(input.value.trim()); input.value=''; }
+        }
+
+        function updateUI(status, deviceNameText = '') {
+            // ... [Reuse your existing updateUI code here] ...
+            // For brevity, I am not repasting the exact same long function 
+            // but ensure you include the full updateUI logic from your original code here.
+            
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const deviceName = document.getElementById('deviceName');
+
+            statusIcon.className = 'status-icon';
+            if(status === 'connected') {
+                statusText.innerText = "Connected";
+                statusIcon.innerText = "✅";
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'block';
+                deviceName.innerText = deviceNameText;
+            } else if (status === 'searching') {
+                statusText.innerText = "Searching...";
+                statusIcon.innerText = "🔍";
+                statusIcon.classList.add('pulse');
+            } else {
+                statusText.innerText = "Disconnected";
+                statusIcon.innerText = "📡";
+                connectBtn.style.display = 'block';
+                disconnectBtn.style.display = 'none';
+                connectBtn.disabled = false;
+            }
+        }
+
+        function addLog(msg, isErr=false) {
+            const log = document.getElementById('logContainer');
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            if(isErr) item.style.borderLeftColor = 'red';
+            log.prepend(item);
+        }
+
+        function showError(msg) {
+            document.getElementById('errorText').innerText = msg;
+            document.getElementById('errorAlert').classList.add('show');
+            setTimeout(() => document.getElementById('errorAlert').classList.remove('show'), 3000);
         }
     </script>
 </body>
