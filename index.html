@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Bridge Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { margin-top: 0; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; width: 100%; cursor: pointer; }
+        button:active { background-color: #0056b3; }
+        #log { font-family: monospace; font-size: 12px; color: #333; height: 150px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; background: #fff; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Simulate Bluetooth Scan</h2>
+        <p>Tap to ask the App to scan for devices.</p>
+        <button onclick="requestScan()">Scan for Devices</button>
+    </div>
+
+    <div class="card">
+        <h2>Data from App</h2>
+        <div id="log">Waiting for data...</div>
+    </div>
+
+    <script>
+        // 1. SEND DATA: Function to send data TO Flutter
+        function sendMessageToApp(action, data) {
+            // We create a JSON object to keep data organized
+            const payload = JSON.stringify({
+                action: action,
+                payload: data
+            });
+            
+            // 'FlutterBridge' is the name we will give our channel in Dart
+            if (window.FlutterBridge) {
+                window.FlutterBridge.postMessage(payload);
+            } else {
+                logMessage("Error: Flutter Bridge not detected.");
+            }
+        }
+
+        // 2. RECEIVE DATA: This function will be called BY Flutter
+        function receiveDataFromApp(jsonData) {
+            try {
+                const data = JSON.parse(jsonData);
+                logMessage("Received [" + data.type + "]: " + JSON.stringify(data.content));
+                
+                // Example: If we receive a list of devices, we could display them
+                if (data.type === 'DEVICE_LIST') {
+                    document.getElementById('log').innerHTML += "<br><b>Found " + data.content.length + " devices!</b>";
+                }
+            } catch (e) {
+                logMessage("Error parsing data: " + e);
+            }
+        }
+
+        // Helper function for the button
+        function requestScan() {
+            logMessage("Sending scan request to App...");
+            sendMessageToApp('START_SCAN', { timeout: 10 });
+        }
+
+        // Helper to print text to our on-screen log
+        function logMessage(msg) {
+            const log = document.getElementById('log');
+            log.innerHTML += "<div>> " + msg + "</div>";
+            log.scrollTop = log.scrollHeight; // Auto-scroll to bottom
+        }
+    </script>
+</body>
+</html>
