@@ -3,15 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#7c3aed">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>TiggerSmart Controller</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -19,31 +13,16 @@
             min-height: 100vh;
             padding: 20px;
             color: #fff;
+            padding-bottom: 100px; /* Extra space for debug button */
         }
         
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding-bottom: 50px; /* Space for debug bar */
-        }
+        .container { max-width: 500px; margin: 0 auto; }
         
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-size: 32px; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .header .subtitle { font-size: 14px; opacity: 0.9; }
         
-        .header h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        
-        .header .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
+        /* CARDS */
         .card {
             background: rgba(255,255,255,0.15);
             backdrop-filter: blur(10px);
@@ -52,248 +31,85 @@
             margin-bottom: 15px;
             border: 1px solid rgba(255,255,255,0.2);
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
         
-        .status-card {
-            text-align: center;
-            padding: 25px;
-        }
-        
-        .status-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-        }
-        
-        .status-text {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        .device-name {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        .battery-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .battery-box {
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .battery-box .icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-        
-        .battery-box .label {
-            font-size: 11px;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-        
-        .battery-box .value {
-            font-size: 28px;
-            font-weight: 700;
-        }
-        
-        .battery-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        
-        .battery-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #34d399);
-            transition: width 0.5s ease;
-        }
-        
-        .battery-fill.low {
-            background: linear-gradient(90deg, #ef4444, #f87171);
-        }
-        
-        .battery-fill.medium {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-        
-        .control-card h3 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            opacity: 0.9;
-        }
-        
-        .preset-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .preset-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 15px 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .preset-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-        }
-        
-        .preset-btn:active {
-            transform: translateY(0);
-        }
-        
-        .custom-input {
-            width: 100%;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 12px 15px;
-            border-radius: 12px;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        
-        .custom-input::placeholder {
-            color: rgba(255,255,255,0.5);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 15px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-        
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .log-container {
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            padding: 15px;
-            max-height: 150px;
-            overflow-y: auto;
-            font-size: 12px;
-        }
-        
-        .log-item {
-            margin-bottom: 6px;
-            padding: 6px 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-            border-left: 3px solid #8b5cf6;
-        }
-        
-        .status-connected { color: #10b981; }
-        .status-disconnected { color: #ef4444; }
-        .status-searching { color: #3b82f6; }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .pulse { animation: pulse 1.5s infinite; }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .spin { animation: spin 2s linear infinite; }
-        
-        .alert {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            display: none;
-        }
-        
-        .alert.show { display: block; }
+        /* STATUS CARD */
+        .status-card { text-align: center; padding: 30px; }
+        .status-icon { font-size: 60px; margin-bottom: 15px; display: block;}
+        .status-text { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
+        .status-sub { font-size: 14px; opacity: 0.8; }
 
-        /* DEBUG BAR STYLES */
-        .debug-bar {
-            margin-top: 20px;
-            padding: 10px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 15px;
-            font-size: 12px;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            backdrop-filter: blur(5px);
-        }
-        .mode-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .mode-web { background: #3b82f6; color: white; }
-        .mode-app { background: #f59e0b; color: #000; }
+        /* BATTERY GRID */
+        .battery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .battery-box { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; text-align: center; }
+        .battery-box .icon { font-size: 28px; margin-bottom: 8px; }
+        .battery-box .label { font-size: 11px; opacity: 0.8; }
+        .battery-box .value { font-size: 28px; font-weight: 700; }
         
-        .debug-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 10px;
+        .battery-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .battery-fill { height: 100%; background: #10b981; transition: width 0.5s ease; }
+        .battery-fill.low { background: #ef4444; }
+        .battery-fill.medium { background: #f59e0b; }
+
+        /* CONTROLS */
+        .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .preset-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 15px 10px; border-radius: 12px;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
         }
+        .preset-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.3); }
+
+        .custom-input {
+            width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 12px 15px; border-radius: 12px; font-size: 14px; margin-bottom: 10px;
+        }
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 15px;
+            font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .btn-debug { background: rgba(0,0,0,0.2); color: #ccc; font-size: 12px; padding: 10px; }
+
+        /* ANIMATIONS */
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+        .pulsing { animation: pulse 1.5s infinite; }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinning { animation: spin 1s linear infinite; display: inline-block; }
+
+        /* DEBUG SECTION */
+        #debugSection {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 10px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .log-container {
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #ddd;
+        }
+        .log-item { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
+        .log-error { color: #ff6b6b; font-weight: bold; }
+        .log-success { color: #51cf66; }
+        .log-info { color: #74c0fc; }
+
+        /* STATES */
+        .state-connected { color: #10b981; }
+        .state-disconnected { color: #ef4444; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -303,390 +119,282 @@
             <div class="subtitle">ระบบควบคุมเครื่องทำควันอัจฉริยะ</div>
         </div>
         
-        <div class="alert" id="errorAlert">
-            ⚠️ <span id="errorText"></span>
-        </div>
-        
         <div class="card status-card">
-            <div class="status-icon" id="statusIcon">📡</div>
-            <div class="status-text" id="statusText">ยังไม่ได้เชื่อมต่อ</div>
-            <div class="device-name" id="deviceName"></div>
+            <div id="iconArea" class="status-icon">📡</div>
+            <div id="statusTitle" class="status-text">Ready to Connect</div>
+            <div id="statusSub" class="status-sub">Press the button below to start</div>
         </div>
         
-        <div class="card">
+        <div id="batteryCard" class="card hidden">
             <div class="battery-grid">
                 <div class="battery-box">
                     <div class="icon">🔋</div>
-                    <div class="label">เครื่องทำควัน</div>
-                    <div class="value" id="masterBattery">--</div>
-                    <div class="battery-bar">
-                        <div class="battery-fill" id="masterBatteryFill" style="width: 0%"></div>
-                    </div>
+                    <div class="label">Smoke Machine</div>
+                    <div class="value" id="masterBat">--</div>
+                    <div class="battery-bar"><div class="battery-fill" id="masterFill" style="width:0%"></div></div>
                 </div>
-                
                 <div class="battery-box">
                     <div class="icon">🎮</div>
-                    <div class="label">รีโมทคอนโทรล</div>
-                    <div class="value" id="childBattery">--</div>
-                    <div class="battery-bar">
-                        <div class="battery-fill" id="childBatteryFill" style="width: 0%"></div>
-                    </div>
+                    <div class="label">Remote</div>
+                    <div class="value" id="childBat">--</div>
+                    <div class="battery-bar"><div class="battery-fill" id="childFill" style="width:0%"></div></div>
                 </div>
             </div>
         </div>
         
-        <div class="card control-card">
-            <h3>⚡ โปรแกรมควบคุม</h3>
-            
+        <div id="controlCard" class="card hidden">
             <div class="preset-grid">
-                <button class="preset-btn" onclick="sendPreset('off 2 on 3 done 5')">
-                    💨 สั้น<br><small>รอ 2s → ควัน 3s</small>
-                </button>
-                <button class="preset-btn" onclick="sendPreset('off 5 on 5 done 10')">
-                    💨💨 ปกติ<br><small>รอ 5s → ควัน 5s</small>
-                </button>
-                <button class="preset-btn" onclick="sendPreset('off 3 on 7 done 10')">
-                    💨💨💨 ยาว<br><small>รอ 3s → ควัน 7s</small>
-                </button>
-                <button class="preset-btn" onclick="sendPreset('off 2 on 3 off 2 on 3 done 10')">
-                    💨💨💨💨 2 ครั้ง<br><small>ควัน 3s × 2</small>
-                </button>
+                <button class="preset-btn" onclick="sendCmd('off 2 on 3 done 5')">💨 Short<br><small>2s Wait / 3s Smoke</small></button>
+                <button class="preset-btn" onclick="sendCmd('off 5 on 5 done 10')">💨💨 Normal<br><small>5s Wait / 5s Smoke</small></button>
+                <button class="preset-btn" onclick="sendCmd('off 3 on 7 done 10')">💨💨💨 Long<br><small>3s Wait / 7s Smoke</small></button>
+                <button class="preset-btn" onclick="sendCmd('off 2 on 3 off 2 on 3 done 10')">💨 Double<br><small>2x Burst</small></button>
             </div>
-            
-            <input type="text" 
-                   class="custom-input" 
-                   id="customCommand" 
-                   placeholder="คำสั่งกำหนดเอง เช่น off 5 on 10 done 5"
-                   onkeypress="if(event.key==='Enter') sendCustom()">
-            
-            <button class="btn btn-success" onclick="sendCustom()">
-                📤 ส่งคำสั่งกำหนดเอง
-            </button>
+            <input type="text" class="custom-input" id="customCmd" placeholder="Custom Command...">
+            <button class="btn btn-success" onclick="sendCustom()">Send Command</button>
         </div>
         
-        <button class="btn btn-primary" id="connectBtn" onclick="connect()">
-            🔍 เชื่อมต่อ TiggerSmart
+        <button id="mainBtn" class="btn btn-primary" onclick="handleMainButton()">
+            🔍 Connect TiggerSmart
         </button>
-        
-        <button class="btn btn-danger" id="disconnectBtn" onclick="disconnect()" style="display:none;">
-            ❌ ตัดการเชื่อมต่อ
-        </button>
-        
-        <div class="card">
-            <div class="log-container" id="logContainer"></div>
-        </div>
 
-        <div class="debug-bar">
-            <span>System Mode:</span>
-            <span id="modeBadge" class="mode-badge mode-web">WEB</span>
-            <button class="debug-btn" onclick="toggleMode()">Switch Logic</button>
+        <button class="btn btn-debug" onclick="toggleDebug()">
+            🛠️ Show/Hide Debug Tools
+        </button>
+
+        <div id="debugSection" class="debug-section">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <small>System Logs</small>
+                <button onclick="clearLogs()" style="background:none; border:none; color:#999; cursor:pointer;">Clear</button>
+            </div>
+            <div class="log-container" id="logBox"></div>
         </div>
     </div>
 
     <script>
-        // === CONFIGURATION ===
+        // CONFIG
         const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-        const TX_CHAR_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
-        const RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
-        
-        // === STATE ===
-        let isAppMode = false; // False = Web Bluetooth, True = Flutter Bridge
-        let webDevice = null;
-        let webServer = null;
-        let webTxChar = null;
+        const CHAR_WRITE   = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+        const CHAR_NOTIFY  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
-        // === INITIALIZATION ===
+        let isAppMode = false;
+        let isConnected = false;
+        let webDevice, webServer, webWriteChar;
+
+        // UI ELEMENTS
+        const ui = {
+            icon: document.getElementById('iconArea'),
+            title: document.getElementById('statusTitle'),
+            sub: document.getElementById('statusSub'),
+            btn: document.getElementById('mainBtn'),
+            batCard: document.getElementById('batteryCard'),
+            ctrlCard: document.getElementById('controlCard'),
+            logs: document.getElementById('logBox'),
+            debugSec: document.getElementById('debugSection')
+        };
+
+        // INIT
         window.addEventListener('load', () => {
-            // Check if Flutter Bridge exists
             if (window.FlutterBridge) {
-                setMode(true);
+                isAppMode = true;
+                addLog("📱 System Mode: APP (Flutter Bridge Active)", false, true);
             } else {
-                setMode(false);
-                // Listen for browser support
-                if (!navigator.bluetooth) {
-                    addLog("⚠️ Browser does not support Web Bluetooth", true);
-                } else {
-                    addLog("🚀 Web Bluetooth Ready");
-                }
+                addLog("💻 System Mode: WEB (Browser Bluetooth)", false, true);
             }
         });
 
-        function setMode(isApp) {
-            isAppMode = isApp;
-            const badge = document.getElementById('modeBadge');
-            if (isApp) {
-                badge.textContent = "APP (Flutter)";
-                badge.className = "mode-badge mode-app";
-                addLog("📱 Switched to App Mode (Bridge)");
+        // TOGGLE DEBUG UI
+        function toggleDebug() {
+            if (ui.debugSec.style.display === 'block') {
+                ui.debugSec.style.display = 'none';
             } else {
-                badge.textContent = "WEB (Chrome)";
-                badge.className = "mode-badge mode-web";
-                addLog("🌐 Switched to Web Mode (Standard)");
+                ui.debugSec.style.display = 'block';
             }
         }
 
-        function toggleMode() {
-            setMode(!isAppMode);
+        function clearLogs() {
+            ui.logs.innerHTML = '';
         }
 
-        // === CORE FUNCTIONS ===
-
-        function connect() {
-            if (isAppMode) {
-                // APP MODE: Send message to Flutter
-                updateUI('searching');
-                addLog("📡 Sending CONNECT request to App...");
-                sendToFlutter('CONNECT', {}); 
+        // MAIN BUTTON LOGIC
+        function handleMainButton() {
+            if (isConnected) {
+                // DISCONNECT
+                if (isAppMode) sendToApp('DISCONNECT');
+                else disconnectWeb();
             } else {
-                // WEB MODE: Use existing logic
-                connectWebBluetooth();
+                // CONNECT
+                if (isAppMode) sendToApp('CONNECT');
+                else connectWeb();
             }
         }
 
-        function disconnect() {
-            if (isAppMode) {
-                sendToFlutter('DISCONNECT', {});
-                updateUI('disconnected');
-            } else {
-                disconnectWebBluetooth();
-            }
-        }
-
-        function sendCommand(cmd) {
-            if (isAppMode) {
-                sendToFlutter('WRITE', { data: cmd });
-                addLog(`📤 App Sent: ${cmd}`);
-            } else {
-                sendWebCommand(cmd);
-            }
-        }
-
-        function sendPreset(cmd) { sendCommand(cmd); }
-        
-        function sendCustom() { 
-            const input = document.getElementById('customCommand');
-            if(input.value.trim()) { 
-                sendCommand(input.value.trim()); 
-                input.value=''; 
-            }
-        }
-
-        // === FLUTTER BRIDGE COMMUNICATION ===
-
-        // 1. OUTBOUND: Send to Flutter
-        function sendToFlutter(action, payload) {
+        // APP COMMUNICATION
+        function sendToApp(action, payload = {}) {
             if (window.FlutterBridge) {
-                window.FlutterBridge.postMessage(JSON.stringify({
-                    action: action,
-                    payload: payload
-                }));
-            } else {
-                addLog("❌ FlutterBridge not found!", true);
+                window.FlutterBridge.postMessage(JSON.stringify({ action, payload }));
             }
         }
 
-        // 2. INBOUND: Received from Flutter
-        // This function is called BY the Flutter app code
-        function receiveDataFromApp(jsonString) {
-            try {
-                // Ensure jsonString is actually a string before parsing
-                const data = (typeof jsonString === 'string') ? JSON.parse(jsonString) : jsonString;
-                
-                switch (data.type) {
-                    case 'STATUS':
-                        if (data.content === 'CONNECTED') {
-                            updateUI('connected', 'TiggerSmart (App)');
-                            addLog("✅ Connected via App");
-                        } else if (data.content === 'DISCONNECTED') {
-                            updateUI('disconnected');
-                            addLog("❌ App Disconnected");
-                        }
-                        break;
-                        
-                    case 'NOTIFICATION':
-                        processNotificationData(data.content);
-                        break;
-
-                    case 'ERROR':
-                        showError(data.content);
-                        updateUI('idle');
-                        break;
-                }
-            } catch (e) {
-                addLog("❌ JS Parse Error: " + e.message, true);
-                console.error(e);
-            }
-        }
-
-        // === DATA PROCESSING ===
-        function processNotificationData(valueStr) {
-            addLog(`📥 RX: ${valueStr}`);
-            
-            // Expected Format: "Smoke(MASTER): 50% Remote(CHILD): 80%"
-            if (valueStr.includes('Smoke(MASTER)')) {
-                const masterMatch = valueStr.match(/Smoke\(MASTER\):\s*(\d+)%/);
-                const childMatch = valueStr.match(/Remote\(CHILD\):\s*(\d+)%/);
-                
-                if (masterMatch) {
-                    const val = parseInt(masterMatch[1]);
-                    updateBattery('masterBattery', val);
-                    if(val < 20) showError("⚠️ Master Battery Low!");
-                }
-                if (childMatch) {
-                    const val = parseInt(childMatch[1]);
-                    updateBattery('childBattery', val);
-                    if(val < 20) showError("⚠️ Remote Battery Low!");
-                }
-            }
-        }
-
-        // === WEB BLUETOOTH LOGIC ===
-
-        async function connectWebBluetooth() {
-            if (!navigator.bluetooth) return showError('Browser does not support Bluetooth');
+        // WEB BLUETOOTH LOGIC (Laptop Support)
+        async function connectWeb() {
+            if (!navigator.bluetooth) return alert("Web Bluetooth not supported.");
             
             try {
-                updateUI('searching');
-                addLog('🔍 Scanning for TiggerSmart...');
-
+                handleStatus('SCANNING');
+                addLog('Starting Web Bluetooth Scan...');
+                
                 webDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'TiggerSmart' }],
                     optionalServices: [SERVICE_UUID]
                 });
 
-                webDevice.addEventListener('gattserverdisconnected', onWebDisconnected);
-                addLog(`📱 Found: ${webDevice.name}`);
+                handleStatus('CONNECTING...');
+                addLog(`Device Selected: ${webDevice.name}`);
+                
+                webDevice.addEventListener('gattserverdisconnected', () => handleStatus('DISCONNECTED'));
                 
                 webServer = await webDevice.gatt.connect();
-                addLog('⚡ GATT Connected');
-                
                 const service = await webServer.getPrimaryService(SERVICE_UUID);
-                webTxChar = await service.getCharacteristic(TX_CHAR_UUID);
-                const rxChar = await service.getCharacteristic(RX_CHAR_UUID);
+                webWriteChar = await service.getCharacteristic(CHAR_WRITE);
+                const notifyChar = await service.getCharacteristic(CHAR_NOTIFY);
                 
-                await rxChar.startNotifications();
-                rxChar.addEventListener('characteristicvaluechanged', (e) => {
+                await notifyChar.startNotifications();
+                notifyChar.addEventListener('characteristicvaluechanged', (e) => {
                     const val = new TextDecoder().decode(e.target.value);
-                    processNotificationData(val);
+                    handleData(val);
                 });
                 
-                updateUI('connected', webDevice.name);
-                addLog('✅ Web Bluetooth Ready');
+                handleStatus('CONNECTED');
+                addLog('Web Bluetooth Connected Successfully', false, true);
 
-            } catch (error) {
-                console.error(error);
-                if (error.name === 'NotFoundError') {
-                    addLog('❌ User cancelled scan', true);
-                } else {
-                    showError(error.message);
-                    addLog(`❌ Error: ${error.message}`, true);
-                }
-                updateUI('idle');
+            } catch (e) {
+                handleStatus('DISCONNECTED');
+                addLog(`Web Connect Error: ${e.message}`, true);
             }
         }
 
-        async function sendWebCommand(cmd) {
-            if (!webTxChar) return showError('Not connected');
-            try {
+        function disconnectWeb() {
+            if (webDevice && webDevice.gatt.connected) webDevice.gatt.disconnect();
+        }
+
+        // COMMAND SENDER
+        function sendCmd(cmd) {
+            if (!isConnected) return;
+            
+            addLog(`📤 Sending Command: ${cmd}`, false, false);
+            if (isAppMode) {
+                sendToApp('WRITE', { data: cmd });
+            } else if (webWriteChar) {
                 const encoder = new TextEncoder();
-                await webTxChar.writeValue(encoder.encode(cmd));
-                addLog(`📤 Web Sent: ${cmd}`);
-            } catch (e) { 
-                showError(e.message); 
-                addLog(`❌ Send Error: ${e.message}`, true);
+                webWriteChar.writeValue(encoder.encode(cmd))
+                    .catch(e => addLog(`Web Write Failed: ${e}`, true));
             }
         }
 
-        function disconnectWebBluetooth() {
-            if (webDevice && webDevice.gatt.connected) {
-                webDevice.gatt.disconnect();
+        function sendCustom() {
+            const el = document.getElementById('customCmd');
+            if(el.value) { sendCmd(el.value); el.value = ''; }
+        }
+
+        // INCOMING DATA HANDLER
+        function receiveDataFromApp(jsonStr) {
+            try {
+                const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+                
+                switch(data.type) {
+                    case 'STATUS': handleStatus(data.content); break;
+                    case 'NOTIFICATION': handleData(data.content); break;
+                    case 'ERROR': addLog(`❌ APP ERROR: ${data.content}`, true); break;
+                }
+            } catch(e) {
+                addLog(`JSON Parse Error: ${e.message}`, true);
             }
         }
 
-        function onWebDisconnected() {
-            updateUI('disconnected');
-            addLog('🔌 Disconnected');
-            webDevice = null;
-        }
-
-        // === UI HELPERS ===
-
-        function updateBattery(id, percent) {
-            const valueEl = document.getElementById(id);
-            const fillEl = document.getElementById(id + 'Fill');
+        // STATUS & UI UPDATE
+        function handleStatus(status) {
+            addLog(`⚡ Status Update: ${status}`);
             
-            valueEl.textContent = `${percent}%`;
-            fillEl.style.width = `${percent}%`;
-            
-            fillEl.className = 'battery-fill';
-            if (percent <= 20) fillEl.classList.add('low');
-            else if (percent <= 50) fillEl.classList.add('medium');
-        }
-
-        function updateUI(status, deviceNameText = '') {
-            const statusIcon = document.getElementById('statusIcon');
-            const statusText = document.getElementById('statusText');
-            const deviceName = document.getElementById('deviceName');
-            const connectBtn = document.getElementById('connectBtn');
-            const disconnectBtn = document.getElementById('disconnectBtn');
-
-            // Reset classes
-            statusText.className = 'status-text';
-            statusIcon.className = 'status-icon';
-            
-            if (status === 'connected') {
-                statusIcon.textContent = '✅';
-                statusText.textContent = 'เชื่อมต่อสำเร็จ';
-                statusText.classList.add('status-connected');
-                deviceName.textContent = `อุปกรณ์: ${deviceNameText}`;
-                connectBtn.style.display = 'none';
-                disconnectBtn.style.display = 'block';
-            
-            } else if (status === 'disconnected') {
-                statusIcon.textContent = '❌';
-                statusText.textContent = 'ตัดการเชื่อมต่อแล้ว';
-                statusText.classList.add('status-disconnected');
-                connectBtn.style.display = 'block';
-                disconnectBtn.style.display = 'none';
-            
-            } else if (status === 'searching') {
-                statusIcon.textContent = '🔍';
-                statusIcon.classList.add('pulse');
-                statusText.textContent = 'กำลังค้นหา...';
-                statusText.classList.add('status-searching');
-                connectBtn.disabled = true;
-            
-            } else {
-                // Idle state
-                statusIcon.textContent = '📡';
-                statusText.textContent = 'ยังไม่ได้เชื่อมต่อ';
-                connectBtn.style.display = 'block';
-                connectBtn.disabled = false;
-                disconnectBtn.style.display = 'none';
+            if (status === 'SCANNING') {
+                ui.icon.textContent = '🔍';
+                ui.icon.className = 'status-icon pulsing';
+                ui.title.textContent = 'Searching...';
+                ui.sub.textContent = 'Scanning for TiggerSmart...';
+                ui.btn.disabled = true;
+                ui.btn.textContent = 'Scanning...';
+            } 
+            else if (status === 'CONNECTING...') {
+                ui.icon.textContent = '⏳';
+                ui.icon.className = 'status-icon spinning';
+                ui.title.textContent = 'Connecting...';
+                ui.sub.textContent = 'Establishing secure link...';
+            }
+            else if (status === 'CONNECTED') {
+                isConnected = true;
+                ui.icon.textContent = '✅';
+                ui.icon.className = 'status-icon';
+                ui.title.textContent = 'Connected';
+                ui.title.className = 'status-text state-connected';
+                ui.sub.textContent = 'System Ready';
+                
+                ui.batCard.classList.remove('hidden');
+                ui.ctrlCard.classList.remove('hidden');
+                
+                ui.btn.disabled = false;
+                ui.btn.className = 'btn btn-danger';
+                ui.btn.textContent = '❌ Disconnect';
+            } 
+            else if (status === 'DISCONNECTED') {
+                isConnected = false;
+                ui.icon.textContent = '📡';
+                ui.icon.className = 'status-icon';
+                ui.title.textContent = 'Disconnected';
+                ui.title.className = 'status-text state-disconnected';
+                ui.sub.textContent = 'Press Connect to start';
+                
+                ui.batCard.classList.add('hidden');
+                ui.ctrlCard.classList.add('hidden');
+                
+                ui.btn.disabled = false;
+                ui.btn.className = 'btn btn-primary';
+                ui.btn.textContent = '🔍 Connect TiggerSmart';
             }
         }
 
-        function addLog(message, isError = false) {
-            const logContainer = document.getElementById('logContainer');
-            const logItem = document.createElement('div');
-            logItem.className = 'log-item';
-            if (isError) logItem.style.borderLeftColor = '#ef4444';
+        // DATA PARSER
+        function handleData(str) {
+            addLog(`📥 RX: ${str}`, false, true);
             
-            const time = new Date().toLocaleTimeString('th-TH');
-            logItem.textContent = `[${time}] ${message}`;
+            const master = str.match(/Smoke\(MASTER\):\s*(\d+)%/);
+            const child = str.match(/Remote\(CHILD\):\s*(\d+)%/);
             
-            logContainer.insertBefore(logItem, logContainer.firstChild);
-            if (logContainer.children.length > 30) {
-                logContainer.removeChild(logContainer.lastChild);
-            }
+            if (master) updateBat('master', master[1]);
+            if (child) updateBat('child', child[1]);
         }
 
-        function showError(message) {
-            const alert = document.getElementById('errorAlert');
-            const text = document.getElementById('errorText');
-            text.textContent = message;
-            alert.classList.add('show');
-            setTimeout(() => alert.classList.remove('show'), 5000);
+        function updateBat(type, val) {
+            const elVal = document.getElementById(`${type}Bat`);
+            const elFill = document.getElementById(`${type}Fill`);
+            
+            elVal.textContent = val + '%';
+            elFill.style.width = val + '%';
+            
+            elFill.className = 'battery-fill';
+            if(val < 20) elFill.classList.add('low');
+            else if(val < 50) elFill.classList.add('medium');
+        }
+
+        // LOGGER
+        function addLog(msg, isError = false, isSuccess = false) {
+            const div = document.createElement('div');
+            div.className = 'log-item';
+            if(isError) div.classList.add('log-error');
+            if(isSuccess) div.classList.add('log-success');
+            
+            const time = new Date().toLocaleTimeString('th-TH').split(' ')[0];
+            div.textContent = `[${time}] ${msg}`;
+            
+            ui.logs.prepend(div);
         }
     </script>
 </body>
